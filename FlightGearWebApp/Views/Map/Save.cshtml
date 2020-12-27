@@ -1,0 +1,48 @@
+﻿@{
+        ViewBag.Title = "display";
+    }
+<html>
+<body>
+
+    <style>
+        img {
+            max-width: 100%;
+            max-height: 100%;
+        }
+    </style>
+    <img src="~/Images/export-map-share.png" />
+</body>
+</html>
+
+
+<script>
+    var duration = @Session["Duration"] * 1000;
+    var interval = @Session["Interval"] * 65;
+    //save the plane's path to the file
+    function SavePathToFile() {
+        if (duration > 0)
+        {
+            //get cordinates and write to the file
+            $.post("@Url.Action("GetCoordinates")").done(function (xml) {
+                var xmlDoc = $.parseXML(xml),
+                    $xml = $(xmlDoc),
+                // the values of lat and lon
+                lat = Math.abs($xml.find("Lat").text());
+                lon = Math.abs($xml.find("Lon").text());
+                $("#networkLat").text(lat);
+                $("#networkLon").text(lon);
+                $.post("@Url.Action("WriteCoordinates")");
+            });
+            duration -= interval;
+        }
+        // if there is not duration
+        else
+        {
+           clearInterval(setInt);
+           setTimeout(function () { alert("Saved to file."); });
+        }                
+    }
+    var setInt = setInterval(SavePathToFile, interval);
+    // save the path in the file
+    SavePathToFile();
+</script>

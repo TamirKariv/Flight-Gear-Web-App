@@ -1,0 +1,43 @@
+﻿@{
+    ViewBag.Title = "DisplayOneTime";
+}
+
+<!DOCTYPE html>
+<html>
+<body>
+    <style>
+        img {
+            max-width: 100%;
+            max-height: 100%;
+        }
+    </style>
+    <canvas id='id_canvas' style='position:absolute; left:0px; top:0px;'></canvas>
+    <img src="~/Images/export-map-share.png" img id='id_image' />
+    <script src="~/Scripts/Draw.js"></script>
+</body>
+</html>
+
+<script>
+    //Set up canvas and background
+    var img = document.getElementById('id_image');
+        imgWidth = img.clientWidth;
+    imgHeight = img.clientHeight;
+
+    var canvas = document.getElementById("id_canvas");
+
+    var ctx = canvas.getContext("2d");
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        ctx.fillStyle = "red";
+        ctx.strokeStyle = "red";
+    ctx.lineWidth = "5";
+
+    //get the cordinates and draw the plane
+    $.post("@Url.Action("GetCoordinates")").done(function (xml) {
+            var xmlDoc = $.parseXML(xml),
+            $xml = $(xmlDoc),
+            x = Math.abs($xml.find("Lat").text());
+            y = Math.abs($xml.find("Lon").text());
+            DrawPlane(ctx, x, y);
+        });
+</script>

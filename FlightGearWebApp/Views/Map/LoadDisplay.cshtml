@@ -1,0 +1,67 @@
+﻿@{
+    ViewBag.Title = "LoadDisplay";
+}
+<!DOCTYPE html>
+<html>
+<body>
+    <style>
+        img {
+            max-width: 100%;
+            max-height: 100%;
+        }
+    </style>
+    <canvas id='id_canvas' style='position:absolute; left:0px; top:0px;'></canvas>
+    <img src="~/Images/export-map-share.png" img id='id_image' />
+    <script src="~/Scripts/Draw.js"></script>
+</body>
+</html>
+
+<script>
+
+    //Set up canvas and background
+    var interval = @Session["Interval"] * 1000;
+    var img = document.getElementById('id_image');
+        imgWidth = img.clientWidth;
+    imgHeight = img.clientHeight;
+
+    var canvas = document.getElementById("id_canvas");
+
+    var ctx = canvas.getContext("2d");
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        ctx.fillStyle = "red";
+        ctx.strokeStyle = "red";
+        ctx.lineWidth = "5";
+
+    //load the corodinates from the file and draw the plane and it's movment
+         $.post("@Url.Action("LoadFromFile")");
+    DrawPath = (function () {
+        $.post("@Url.Action("GetCoordinatesFromFile")").done(function (xml) {
+            var xmlDoc = $.parseXML(xml),
+                $xml = $(xmlDoc),
+            // keeps the current values of the lat and lon, so we will be able to draw the orbit from
+            // the previous point of the plane to the current point of the plane.
+            currentX = Math.abs($xml.find("Lat").text());
+            currentY = Math.abs($xml.find("Lon").text());
+            // if the x value is not undefined, so it exists, we can draw the plane's orbit
+            if (typeof DrawPath.prevX != "undefined")
+            {
+              DrawMovment(ctx, DrawPath.prevX, DrawPath.prevY, currentX, currentY);
+            }
+            // if the prevX is undefined (it is not exists), we draw the first point of the plane.
+            else
+            {
+                DrawPlane(ctx, currentX, currentY);
+            }
+
+            //save previous location for movement
+            DrawPath.prevX = currentX;
+            DrawPath.prevY = currentY;
+        });
+    });
+    setInterval(DrawPath, interval);
+    // draws the path of the plane
+    DrawPath();
+</script>
+
+
